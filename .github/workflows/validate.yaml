@@ -38,7 +38,7 @@ jobs:
       - name: Compile and validate
         # GITHUB_REF / GITHUB_SHA are provided automatically and become the
         # bundle version; "." is the data root, bundle.json the output.
-        run: node "$RUNNER_TEMP/pbc/node_modules/@pi-base/compile/dist/main.js" . bundle.json
+        run: node "$RUNNER_TEMP/pbc/node_modules/@pi-base/compile/lib/main.js" . bundle.json
 
       - name: Upload bundle
         if: success()
