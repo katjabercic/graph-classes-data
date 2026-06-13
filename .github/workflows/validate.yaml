@@ -3,10 +3,6 @@ name: Validate data
 # Compiles every property/space/theorem/trait file, checks schemas,
 # cross-references, and per-object contradictions, and produces bundle.json.
 # The job fails on any error, so a red check = the data does not compile.
-#
-# NOTE: this workflow runs once this directory is its own repository, with the
-# data files (properties/, spaces/, theorems/) at the repository root. While it
-# lives inside pi-base-web as a subfolder, GitHub will not run it.
 
 on:
   push:
@@ -18,29 +14,16 @@ jobs:
     steps:
       - name: Checkout data
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      # The π-base compiler is published to npm. We install it into a temp
-      # prefix and call its one-shot entry point dist/main.js directly — the
-      # package's default `bin` is watch mode (a long-running dev server),
-      # which is not what we want in CI.
-      #
-      # If you later customise the compiler in your fork of pi-base-web (e.g.
-      # adding an ISGCI/OEIS reference type), replace these two steps with a
-      # checkout + build of that repo and run packages/compile/src/main.ts.
-      - name: Install compiler
-        run: npm install --prefix "$RUNNER_TEMP/pbc" @pi-base/compile
 
       - name: Compile and validate
-        # GITHUB_REF / GITHUB_SHA are provided automatically and become the
-        # bundle version; "." is the data root, bundle.json the output.
-        run: node "$RUNNER_TEMP/pbc/node_modules/@pi-base/compile/lib/main.js" . bundle.json
+        # Uses the same Docker action as the main pi-base/data repo.
+        # Reads the repository from GITHUB_WORKSPACE, writes bundle.json there.
+        # If you later fork the compiler (e.g. to add ISGCI/OEIS ref types),
+        # replace this with a checkout + build of your fork and call
+        # packages/compile/src/main.ts via tsx.
+        uses: docker://ghcr.io/pi-base/compile:latest
+        with:
+          out: bundle.json
 
       - name: Upload bundle
         if: success()
